@@ -5,14 +5,19 @@ import { parse } from 'csv-parse/sync';
 
 import { Charger } from '../chargers/charger.entity';
 
+const databaseUrl = process.env.DATABASE_URL;
+
 const dataSource = new DataSource({
   type: 'postgres',
-  host: 'localhost',
-  port: 5432,
-  username: 'postgres',
-  password: 'gababa',
-  database: 'ev_charger_db',
+  url: databaseUrl || undefined,
+  host: databaseUrl ? undefined : process.env.DB_HOST || 'localhost',
+  port: databaseUrl ? undefined : Number(process.env.DB_PORT || 5432),
+  username: databaseUrl ? undefined : process.env.DB_USERNAME || 'postgres',
+  password: databaseUrl ? undefined : process.env.DB_PASSWORD || 'gababa',
+  database: databaseUrl ? undefined : process.env.DB_NAME || 'ev_charger_db',
   entities: [Charger],
+  ssl:
+    process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });
 
 async function seed() {

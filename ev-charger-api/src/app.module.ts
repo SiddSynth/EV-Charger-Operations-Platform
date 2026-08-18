@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AppController } from './app.controller';
@@ -15,16 +16,30 @@ import { MaintenanceModule } from './maintenance/maintenance.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'gababa',
-      database: 'ev_charger_db',
-      entities: [User, Charger, MaintenanceTicket],
-      autoLoadEntities: true,
-      synchronize: true,
+    ConfigModule.forRoot({ isGlobal: true }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const databaseUrl = configService.get<string>('DATABASE_URL');
+
+        return {
+          type: 'postgres',
+          url: databaseUrl || undefined,
+          host: databaseUrl ? undefined : configService.get<string>('DB_HOST', 'localhost'),
+          port: databaseUrl ? undefined : Number(configService.get<number>('DB_PORT', 5432)),
+          username: databaseUrl ? undefined : configService.get<string>('DB_USERNAME', 'postgres'),
+          password: databaseUrl ? undefined : configService.get<string>('DB_PASSWORD', 'gababa'),
+          database: databaseUrl ? undefined : configService.get<string>('DB_NAME', 'ev_charger_db'),
+          entities: [User, Charger, MaintenanceTicket],
+          autoLoadEntities: true,
+          synchronize: configService.get<string>('NODE_ENV') !== 'production',
+          ssl:
+            configService.get<string>('NODE_ENV') === 'production'
+              ? { rejectUnauthorized: false }
+              : false,
+        };
+      },
     }),
 
     UsersModule,
