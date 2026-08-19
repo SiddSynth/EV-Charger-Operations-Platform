@@ -5,7 +5,7 @@ let cachedApp: any;
 
 async function bootstrap() {
   if (!cachedApp) {
-    const app = await NestFactory.create(AppModule);
+    const app = await NestFactory.create(AppModule, { abortOnError: false });
 
     app.enableCors();
 
