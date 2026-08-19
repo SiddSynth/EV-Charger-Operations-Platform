@@ -2,16 +2,24 @@ import { DataSource } from 'typeorm';
 import * as fs from 'fs';
 import * as path from 'path';
 import { parse } from 'csv-parse/sync';
+import * as dotenv from 'dotenv';
+
+// Load environmental variables
+dotenv.config();
 
 import { Charger } from '../chargers/charger.entity';
 
 const dataSource = new DataSource({
   type: 'postgres',
-  host: 'localhost',
-  port: 5432,
-  username: 'postgres',
-  password: 'gababa',
-  database: 'ev_charger_db',
+  url: process.env.DATABASE_URL,
+  // Use fallback local settings only if DATABASE_URL is not provided
+  ...(!process.env.DATABASE_URL && {
+    host: 'localhost',
+    port: 5432,
+    username: 'postgres',
+    password: 'gababa',
+    database: 'ev_charger_db',
+  }),
   entities: [Charger],
 });
 

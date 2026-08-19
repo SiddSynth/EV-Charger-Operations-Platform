@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
+import { API_BASE_URL } from "@/app/config";
 
 type Charger = {
   id: number;
@@ -25,7 +26,7 @@ export default function StationsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:3001/chargers")
+    fetch(`${API_BASE_URL}/chargers`)
       .then((response) => response.json())
       .then((data: Charger[]) => {
         const grouped: Record<string, Station> = {};

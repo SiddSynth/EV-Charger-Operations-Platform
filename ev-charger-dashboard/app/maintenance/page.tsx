@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
+import { API_BASE_URL } from "@/app/config";
 
 type Ticket = {
   id: number;
@@ -37,7 +38,7 @@ export default function MaintenancePage() {
   const [error, setError] = useState("");
 
   function fetchTickets() {
-    fetch("http://localhost:3001/maintenance")
+    fetch(`${API_BASE_URL}/maintenance`)
       .then((response) => response.json())
       .then((data) => {
         setTickets(data);
@@ -55,7 +56,7 @@ export default function MaintenancePage() {
   useEffect(() => {
     fetchTickets();
 
-    fetch("http://localhost:3001/chargers")
+    fetch(`${API_BASE_URL}/chargers`)
       .then((response) => response.json())
       .then((data) => {
         setChargers(data);
@@ -84,7 +85,7 @@ export default function MaintenancePage() {
 
     try {
       const response = await fetch(
-        "http://localhost:3001/maintenance",
+        `${API_BASE_URL}/maintenance`,
         {
           method: "POST",
           headers: {

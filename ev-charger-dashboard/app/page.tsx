@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
+import { API_BASE_URL } from "@/app/config";
 
 type ChargerStats = {
   total: number;
@@ -44,7 +45,7 @@ export default function Home() {
   }
 
   const fetchStats = () => {
-    fetch("http://localhost:3001/chargers/stats")
+    fetch(`${API_BASE_URL}/chargers/stats`)
       .then((response) => response.json())
       .then((data) => {
         setStats(data);

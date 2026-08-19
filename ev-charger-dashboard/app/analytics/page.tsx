@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
+import { API_BASE_URL } from "@/app/config";
 
 type Analytics = {
   totalChargers: number;
@@ -14,7 +15,7 @@ export default function AnalyticsPage() {
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
 
   useEffect(() => {
-    fetch("http://localhost:3001/chargers/analytics")
+    fetch(`${API_BASE_URL}/chargers/analytics`)
       .then((response) => response.json())
       .then((data) => {
         setAnalytics(data);
