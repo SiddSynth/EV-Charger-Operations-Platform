@@ -8,6 +8,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 import { Charger } from '../chargers/charger.entity';
+import { User } from '../users/user.entity';
 
 const dataSource = new DataSource({
   type: 'postgres',
@@ -20,13 +21,30 @@ const dataSource = new DataSource({
     password: 'gababa',
     database: 'ev_charger_db',
   }),
-  entities: [Charger],
+  entities: [Charger, User],
 });
 
 async function seed() {
   await dataSource.initialize();
 
   console.log('Database connected.');
+
+  // Seed Users
+  const userRepository = dataSource.getRepository(User);
+  const mockUsers = [
+    { email: 'vishal@evcompany.com', password: 'admin123', role: 'Admin' },
+    { email: 'satyam@evcompany.com', password: 'employee123', role: 'Employee' },
+    { email: 'rahul@evcompany.com', password: 'inactive123', role: 'Employee' }
+  ];
+
+  for (const mu of mockUsers) {
+    const existing = await userRepository.findOneBy({ email: mu.email });
+    if (!existing) {
+      const user = userRepository.create(mu);
+      await userRepository.save(user);
+      console.log(`User ${mu.email} created.`);
+    }
+  }
 
   const filePath = path.join(
     process.cwd(),
