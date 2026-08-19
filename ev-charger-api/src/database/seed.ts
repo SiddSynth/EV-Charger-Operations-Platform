@@ -61,6 +61,13 @@ async function seed() {
 
   const chargerRepository = dataSource.getRepository(Charger);
 
+  const existingChargersCount = await chargerRepository.count();
+  if (existingChargersCount > 0) {
+    console.log('Database already has chargers. Skipping charger seeding.');
+    await dataSource.destroy();
+    return;
+  }
+
   const chargers = records.map((record: any) => {
     const charger = new Charger();
 
