@@ -39,6 +39,9 @@ export class MaintenanceService {
       throw new Error('Charger not found');
     }
 
+    charger.status = 'Maintenance';
+    await this.chargerRepository.save(charger);
+
     const ticket = this.ticketRepository.create({
       charger,
       issue,
