@@ -5,6 +5,9 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ default: '' })
+  name: string;
+
   @Column({ unique: true })
   email: string;
 
@@ -13,4 +16,7 @@ export class User {
 
   @Column()
   role: string;
+
+  @Column({ default: 'Active' })
+  status: string;
 }

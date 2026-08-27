@@ -22,6 +22,7 @@ const dataSource = new DataSource({
     database: 'ev_charger_db',
   }),
   entities: [Charger, User],
+  synchronize: true,
 });
 
 async function seed() {
@@ -32,18 +33,21 @@ async function seed() {
   // Seed Users
   const userRepository = dataSource.getRepository(User);
   const mockUsers = [
-    { email: 'vishal@evcompany.com', password: 'admin123', role: 'Admin' },
-    { email: 'satyam@evcompany.com', password: 'employee123', role: 'Employee' },
-    { email: 'rahul@evcompany.com', password: 'inactive123', role: 'Employee' }
+    { name: 'Vishal', email: 'vishal@evcompany.com', password: 'admin123', role: 'Admin', status: 'Active' },
+    { name: 'Satyam', email: 'satyam@evcompany.com', password: 'employee123', role: 'Employee', status: 'Active' },
+    { name: 'Rahul', email: 'rahul@evcompany.com', password: 'inactive123', role: 'Employee', status: 'Inactive' }
   ];
 
   for (const mu of mockUsers) {
-    const existing = await userRepository.findOneBy({ email: mu.email });
-    if (!existing) {
-      const user = userRepository.create(mu);
-      await userRepository.save(user);
-      console.log(`User ${mu.email} created.`);
+    let user = await userRepository.findOneBy({ email: mu.email });
+    if (!user) {
+      user = userRepository.create(mu);
+    } else {
+      user.name = mu.name;
+      user.status = mu.status;
     }
+    await userRepository.save(user);
+    console.log(`User ${mu.email} created/updated.`);
   }
 
   const filePath = path.join(

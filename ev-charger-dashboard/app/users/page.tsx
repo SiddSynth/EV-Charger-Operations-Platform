@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
+import { API_BASE_URL } from "@/app/config";
 
 const initialUsers = [
   {
@@ -43,9 +44,41 @@ function getStatusStyle(status: string) {
   return "bg-slate-100 text-slate-600";
 }
 
+type User = {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+};
+
 export default function UsersPage() {
-  const [users, setUsers] = useState(initialUsers);
+  const [users, setUsers] = useState<User[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Form states
+  const [newName, setNewName] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [newRole, setNewRole] = useState("Employee");
+  const [submitting, setSubmitting] = useState(false);
+
+  function fetchUsers() {
+    fetch(`${API_BASE_URL}/users`)
+      .then((res) => res.json())
+      .then((data) => {
+        setUsers(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch users:", err);
+        setLoading(false);
+      });
+  }
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   const totalUsers = users.length;
 
@@ -61,20 +94,59 @@ export default function UsersPage() {
     (user) => user.status === "Active"
   ).length;
 
-  function toggleUserStatus(id: number) {
-    setUsers((currentUsers) =>
-      currentUsers.map((user) =>
-        user.id === id
-          ? {
-              ...user,
-              status:
-                user.status === "Active"
-                  ? "Inactive"
-                  : "Active",
-            }
-          : user
-      )
-    );
+  async function toggleUserStatus(id: number) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/${id}/status`, {
+        method: "PUT",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to toggle status");
+      }
+
+      fetchUsers();
+    } catch (error) {
+      console.error("Failed to toggle user status:", error);
+      alert("Failed to toggle user status. Please try again.");
+    }
+  }
+
+  async function handleAddUser(event: React.FormEvent) {
+    event.preventDefault();
+    if (!newName.trim() || !newEmail.trim()) {
+      alert("Please enter a name and email.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/users`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: newName.trim(),
+          email: newEmail.trim(),
+          role: newRole,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add user");
+      }
+
+      setNewName("");
+      setNewEmail("");
+      setNewRole("Employee");
+      setShowModal(false);
+      fetchUsers();
+    } catch (error) {
+      console.error("Failed to add user:", error);
+      alert("Failed to add user. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -374,62 +446,72 @@ export default function UsersPage() {
               </button>
             </div>
 
-            <div className="mt-6 space-y-4">
+            <form onSubmit={handleAddUser}>
+              <div className="mt-6 space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-slate-700">
+                    Name
+                  </label>
 
-              <div>
-                <label className="text-sm font-medium text-slate-700">
-                  Name
-                </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Enter full name"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-500"
+                  />
+                </div>
 
-                <input
-                  type="text"
-                  placeholder="Enter full name"
-                  className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-500"
-                />
+                <div>
+                  <label className="text-sm font-medium text-slate-700">
+                    Email
+                  </label>
+
+                  <input
+                    type="email"
+                    required
+                    placeholder="Enter email address"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-slate-700">
+                    Role
+                  </label>
+
+                  <select
+                    value={newRole}
+                    onChange={(e) => setNewRole(e.target.value)}
+                    className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none focus:border-blue-500"
+                  >
+                    <option value="Employee">Employee</option>
+                    <option value="Admin">Admin</option>
+                  </select>
+                </div>
               </div>
 
-              <div>
-                <label className="text-sm font-medium text-slate-700">
-                  Email
-                </label>
-
-                <input
-                  type="email"
-                  placeholder="Enter email address"
-                  className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-slate-700">
-                  Role
-                </label>
-
-                <select
-                  defaultValue="Employee"
-                  className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none focus:border-blue-500"
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="rounded-lg border border-slate-300 px-4 py-2.5 font-medium text-slate-700 hover:bg-slate-50"
                 >
-                  <option>Employee</option>
-                  <option>Admin</option>
-                </select>
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="rounded-lg bg-slate-900 px-5 py-2.5 font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
+                >
+                  {submitting ? "Adding..." : "Add User"}
+                </button>
               </div>
-            </div>
-
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                onClick={() => setShowModal(false)}
-                className="rounded-lg border border-slate-300 px-4 py-2.5 font-medium text-slate-700 hover:bg-slate-50"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={() => setShowModal(false)}
-                className="rounded-lg bg-slate-900 px-5 py-2.5 font-semibold text-white hover:bg-slate-800"
-              >
-                Add User
-              </button>
-            </div>
+            </form>
           </div>
         </div>
       )}
