@@ -55,20 +55,54 @@ export class ChargersService {
     const byOperator: Record<string, number> = {};
 
     let totalPower = 0;
+    let fastChargers = 0;
+    let slowChargers = 0;
 
     chargers.forEach((charger) => {
-      byState[charger.state] =
-        (byState[charger.state] || 0) + 1;
+      // Normalize state names
+      let state = charger.state ? charger.state.trim() : 'Unknown';
+      if (state) {
+        const stateLower = state.toLowerCase();
+        if (stateLower.includes('keral') || stateLower === 'keraka' || stateLower === 'lerala') {
+          state = 'Kerala';
+        } else if (stateLower.includes('karnatak')) {
+          state = 'Karnataka';
+        } else if (stateLower.includes('maharashtr')) {
+          state = 'Maharashtra';
+        } else if (stateLower.includes('tamil')) {
+          state = 'Tamil Nadu';
+        } else if (stateLower.includes('delhi')) {
+          state = 'Delhi';
+        } else {
+          state = state.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+        }
+      } else {
+        state = 'Unknown';
+      }
 
-      byOperator[charger.operator] =
-        (byOperator[charger.operator] || 0) + 1;
+      byState[state] = (byState[state] || 0) + 1;
+
+      // Normalize operators
+      let operator = charger.operator ? charger.operator.trim() : 'Unknown Operator';
+      if (!operator || operator === '' || operator === 'undefined') {
+        operator = 'Unknown Operator';
+      }
+      byOperator[operator] = (byOperator[operator] || 0) + 1;
 
       totalPower += charger.powerKw;
+
+      if (charger.powerKw >= 50) {
+        fastChargers++;
+      } else {
+        slowChargers++;
+      }
     });
 
     return {
       totalChargers: chargers.length,
-      totalPower,
+      totalPower: Math.round(totalPower * 10) / 10,
+      fastChargers,
+      slowChargers,
       byState,
       byOperator,
     };

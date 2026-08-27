@@ -7,6 +7,8 @@ import { API_BASE_URL } from "@/app/config";
 type Analytics = {
   totalChargers: number;
   totalPower: number;
+  fastChargers: number;
+  slowChargers: number;
   byState: Record<string, number>;
   byOperator: Record<string, number>;
 };
@@ -71,24 +73,52 @@ export default function AnalyticsPage() {
 
         {/* Stats */}
 
-        <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div className="rounded-xl bg-white p-6 shadow">
-            <p className="text-gray-500">
+        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-sm font-medium text-slate-500">
               Total Chargers
             </p>
-
             <p className="mt-2 text-3xl font-bold text-slate-900">
               {analytics.totalChargers}
             </p>
+            <p className="mt-1 text-xs text-slate-400">
+              Charging hardware units
+            </p>
           </div>
 
-          <div className="rounded-xl bg-white p-6 shadow">
-            <p className="text-gray-500">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-sm font-medium text-slate-500">
               Total Charging Capacity
             </p>
-
             <p className="mt-2 text-3xl font-bold text-slate-900">
               {analytics.totalPower.toLocaleString()} kW
+            </p>
+            <p className="mt-1 text-xs text-slate-400">
+              Combined grid power capacity
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
+            <p className="text-sm font-medium text-slate-500">
+              DC Fast Chargers
+            </p>
+            <p className="mt-2 text-3xl font-bold text-blue-600">
+              {analytics.fastChargers}
+            </p>
+            <p className="mt-1 text-xs text-blue-500">
+              High speed (≥ 50 kW) units
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-green-100 bg-white p-6 shadow-sm">
+            <p className="text-sm font-medium text-slate-500">
+              AC Normal Chargers
+            </p>
+            <p className="mt-2 text-3xl font-bold text-green-600">
+              {analytics.slowChargers}
+            </p>
+            <p className="mt-1 text-xs text-green-500">
+              Slow speed (&lt; 50 kW) units
             </p>
           </div>
         </div>
