@@ -1,4 +1,11 @@
-import { Controller, Get, Param, ParseIntPipe, Put, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Put,
+  Body,
+} from '@nestjs/common';
 import { ChargersService } from './chargers.service';
 
 @Controller('chargers')
@@ -15,9 +22,9 @@ export class ChargersController {
     return this.chargersService.getStats();
   }
   @Get('analytics')
-getAnalytics() {
-  return this.chargersService.getAnalytics();
-}
+  getAnalytics() {
+    return this.chargersService.getAnalytics();
+  }
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.chargersService.findOne(id);

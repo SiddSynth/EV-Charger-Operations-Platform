@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -15,8 +15,14 @@ export class ChargersService {
     return this.chargerRepository.find();
   }
 
-  findOne(id: number) {
-    return this.chargerRepository.findOneBy({ id });
+  async findOne(id: number) {
+    const charger = await this.chargerRepository.findOneBy({ id });
+
+    if (!charger) {
+      throw new NotFoundException('Charger not found');
+    }
+
+    return charger;
   }
 
   async getStats() {
@@ -63,7 +69,11 @@ export class ChargersService {
       let state = charger.state ? charger.state.trim() : 'Unknown';
       if (state) {
         const stateLower = state.toLowerCase();
-        if (stateLower.includes('keral') || stateLower === 'keraka' || stateLower === 'lerala') {
+        if (
+          stateLower.includes('keral') ||
+          stateLower === 'keraka' ||
+          stateLower === 'lerala'
+        ) {
           state = 'Kerala';
         } else if (stateLower.includes('karnatak')) {
           state = 'Karnataka';
@@ -74,7 +84,10 @@ export class ChargersService {
         } else if (stateLower.includes('delhi')) {
           state = 'Delhi';
         } else {
-          state = state.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+          state = state
+            .split(' ')
+            .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+            .join(' ');
         }
       } else {
         state = 'Unknown';
@@ -83,7 +96,9 @@ export class ChargersService {
       byState[state] = (byState[state] || 0) + 1;
 
       // Normalize operators
-      let operator = charger.operator ? charger.operator.trim() : 'Unknown Operator';
+      let operator = charger.operator
+        ? charger.operator.trim()
+        : 'Unknown Operator';
       if (!operator || operator === '' || operator === 'undefined') {
         operator = 'Unknown Operator';
       }
@@ -111,7 +126,7 @@ export class ChargersService {
   async updateStatus(id: number, status: string) {
     const charger = await this.chargerRepository.findOneBy({ id });
     if (!charger) {
-      throw new Error('Charger not found');
+      throw new NotFoundException('Charger not found');
     }
     charger.status = status;
     return this.chargerRepository.save(charger);
