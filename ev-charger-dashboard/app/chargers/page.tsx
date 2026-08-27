@@ -21,7 +21,7 @@ export default function ChargersPage() {
   const [stateFilter, setStateFilter] = useState("All");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  function fetchChargers() {
     fetch(`${API_BASE_URL}/chargers`)
       .then((response) => response.json())
       .then((data) => {
@@ -32,7 +32,32 @@ export default function ChargersPage() {
         console.error("Failed to fetch chargers:", error);
         setLoading(false);
       });
+  }
+
+  useEffect(() => {
+    fetchChargers();
   }, []);
+
+  async function handleToggleStatus(id: number, status: string) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/chargers/${id}/status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update status");
+      }
+
+      fetchChargers();
+    } catch (error) {
+      console.error("Failed to update status:", error);
+      alert("Failed to update status. Please try again.");
+    }
+  }
 
   const states = [
   "All",
@@ -130,6 +155,7 @@ export default function ChargersPage() {
                   <th className="p-4">Connector</th>
                   <th className="p-4">Power</th>
                   <th className="p-4">Status</th>
+                  <th className="p-4">Actions</th>
                 </tr>
               </thead>
 
@@ -164,9 +190,41 @@ export default function ChargersPage() {
                     </td>
 
                     <td className="p-4">
-                      <span className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-700">
+                      <span
+                        className={`rounded-full px-3 py-1 text-sm font-medium ${
+                          charger.status === "Online"
+                            ? "bg-green-100 text-green-700"
+                            : charger.status === "Offline"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-yellow-100 text-yellow-700"
+                        }`}
+                      >
                         {charger.status}
                       </span>
+                    </td>
+
+                    <td className="p-4">
+                      {charger.status === "Online" && (
+                        <button
+                          onClick={() => handleToggleStatus(charger.id, "Offline")}
+                          className="rounded bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700"
+                        >
+                          Go Offline
+                        </button>
+                      )}
+                      {charger.status === "Offline" && (
+                        <button
+                          onClick={() => handleToggleStatus(charger.id, "Online")}
+                          className="rounded bg-green-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-green-700"
+                        >
+                          Go Online
+                        </button>
+                      )}
+                      {charger.status === "Maintenance" && (
+                        <span className="text-xs font-semibold text-yellow-600">
+                          In Repair
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -174,7 +232,7 @@ export default function ChargersPage() {
                 {filteredChargers.length === 0 && (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={8}
                       className="p-8 text-center text-gray-500"
                     >
                       No chargers found.

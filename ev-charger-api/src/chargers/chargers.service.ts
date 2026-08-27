@@ -73,4 +73,13 @@ export class ChargersService {
       byOperator,
     };
   }
+
+  async updateStatus(id: number, status: string) {
+    const charger = await this.chargerRepository.findOneBy({ id });
+    if (!charger) {
+      throw new Error('Charger not found');
+    }
+    charger.status = status;
+    return this.chargerRepository.save(charger);
+  }
 }

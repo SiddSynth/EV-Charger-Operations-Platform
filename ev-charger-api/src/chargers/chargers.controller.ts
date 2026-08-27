@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Put, Body } from '@nestjs/common';
 import { ChargersService } from './chargers.service';
 
 @Controller('chargers')
@@ -21,5 +21,13 @@ getAnalytics() {
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.chargersService.findOne(id);
+  }
+
+  @Put(':id/status')
+  updateStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('status') status: string,
+  ) {
+    return this.chargersService.updateStatus(id, status);
   }
 }

@@ -158,7 +158,9 @@ export default function MaintenancePage() {
   ).length;
 
   const highPriorityTickets = tickets.filter(
-    (ticket) => ticket.priority.toLowerCase() === "high"
+    (ticket) =>
+      ticket.priority.toLowerCase() === "high" &&
+      ticket.status.toLowerCase() === "open"
   ).length;
 
   const resolvedTickets = tickets.filter(
