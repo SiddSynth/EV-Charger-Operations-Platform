@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Param, ParseIntPipe } from '@nestjs/common';
 
 import { MaintenanceService } from './maintenance.services';
 
@@ -27,5 +27,10 @@ export class MaintenanceController {
       body.issue,
       body.priority,
     );
+  }
+
+  @Put(':id/resolve')
+  resolve(@Param('id', ParseIntPipe) id: number) {
+    return this.maintenanceService.resolve(id);
   }
 }

@@ -51,4 +51,24 @@ export class MaintenanceService {
 
     return this.ticketRepository.save(ticket);
   }
+
+  async resolve(id: number) {
+    const ticket = await this.ticketRepository.findOne({
+      where: { id },
+      relations: { charger: true },
+    });
+
+    if (!ticket) {
+      throw new Error('Ticket not found');
+    }
+
+    ticket.status = 'Resolved';
+
+    if (ticket.charger) {
+      ticket.charger.status = 'Online';
+      await this.chargerRepository.save(ticket.charger);
+    }
+
+    return this.ticketRepository.save(ticket);
+  }
 }

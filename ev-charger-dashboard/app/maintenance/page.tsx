@@ -123,6 +123,26 @@ export default function MaintenancePage() {
     }
   }
 
+  async function handleResolveTicket(id: number) {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/maintenance/${id}/resolve`,
+        {
+          method: "PUT",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to resolve ticket");
+      }
+
+      fetchTickets();
+    } catch (error) {
+      console.error("Failed to resolve ticket:", error);
+      alert("Failed to resolve ticket. Please try again.");
+    }
+  }
+
   function closeModal() {
     if (submitting) return;
 
@@ -321,6 +341,10 @@ export default function MaintenancePage() {
                         <th className="p-4 text-sm font-semibold">
                           Created
                         </th>
+
+                        <th className="p-4 text-sm font-semibold">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
 
@@ -396,6 +420,17 @@ export default function MaintenancePage() {
                               {new Date(
                                 ticket.createdAt
                               ).toLocaleDateString()}
+                            </td>
+
+                            <td className="p-4">
+                              {isOpen && (
+                                <button
+                                  onClick={() => handleResolveTicket(ticket.id)}
+                                  className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-green-700"
+                                >
+                                  Resolve
+                                </button>
+                              )}
                             </td>
                           </tr>
                         );
