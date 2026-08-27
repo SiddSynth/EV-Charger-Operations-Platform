@@ -23,7 +23,17 @@ type Station = {
 
 export default function StationsPage() {
   const [stations, setStations] = useState<Station[]>([]);
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+
+  const filteredStations = stations.filter((station) => {
+    const searchText = search.toLowerCase();
+    return (
+      station.stationName.toLowerCase().includes(searchText) ||
+      station.city.toLowerCase().includes(searchText) ||
+      station.state.toLowerCase().includes(searchText)
+    );
+  });
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/chargers`)
@@ -179,19 +189,29 @@ export default function StationsPage() {
             {/* Station Grid */}
 
             <div className="mt-8">
-              <div className="mb-4 flex items-center justify-between">
+              <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
                   <h2 className="text-xl font-bold text-slate-900">
                     Charging Stations
                   </h2>
 
                   <p className="mt-1 text-sm text-slate-500">
-                    {stations.length} locations across the network
+                    Showing {filteredStations.length} of {stations.length} locations across the network
                   </p>
+                </div>
+
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Search station, city or state..."
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                    className="w-full sm:w-80 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-slate-900 shadow-sm outline-none focus:border-blue-500"
+                  />
                 </div>
               </div>
 
-              {stations.length === 0 ? (
+              {filteredStations.length === 0 ? (
                 <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
                   <p className="font-medium text-slate-700">
                     No stations found.
@@ -199,7 +219,7 @@ export default function StationsPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-                  {stations.map((station) => {
+                  {filteredStations.map((station) => {
                     const stationRate =
                       station.chargers > 0
                         ? Math.round(
