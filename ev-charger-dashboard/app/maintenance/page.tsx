@@ -40,8 +40,33 @@ export default function MaintenancePage() {
   function fetchTickets() {
     fetch(`${API_BASE_URL}/maintenance`)
       .then((response) => response.json())
-      .then((data) => {
-        setTickets(data);
+      .then((data: Ticket[]) => {
+        const priorityOrder: Record<string, number> = {
+          high: 1,
+          medium: 2,
+          low: 3,
+        };
+
+        const sortedTickets = [...data].sort((a, b) => {
+          // 1. Sort by status (Open tickets first)
+          const isAOpen = a.status.toLowerCase() === "open";
+          const isBOpen = b.status.toLowerCase() === "open";
+          if (isAOpen !== isBOpen) {
+            return isAOpen ? -1 : 1;
+          }
+
+          // 2. Sort by priority (High -> Medium -> Low)
+          const priorityA = priorityOrder[a.priority.toLowerCase()] || 99;
+          const priorityB = priorityOrder[b.priority.toLowerCase()] || 99;
+          if (priorityA !== priorityB) {
+            return priorityA - priorityB;
+          }
+
+          // 3. Sort by ID (newest first)
+          return b.id - a.id;
+        });
+
+        setTickets(sortedTickets);
         setLoading(false);
       })
       .catch((error) => {
