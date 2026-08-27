@@ -1,12 +1,18 @@
-import { Body, Controller, Get, Post, Put, Param, ParseIntPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Put,
+  Param,
+  ParseIntPipe,
+} from '@nestjs/common';
 
 import { MaintenanceService } from './maintenance.services';
 
 @Controller('maintenance')
 export class MaintenanceController {
-  constructor(
-    private readonly maintenanceService: MaintenanceService,
-  ) {}
+  constructor(private readonly maintenanceService: MaintenanceService) {}
 
   @Get()
   findAll() {
@@ -17,13 +23,13 @@ export class MaintenanceController {
   create(
     @Body()
     body: {
-      chargerId: number;
+      chargerId: number | string;
       issue: string;
       priority: string;
     },
   ) {
     return this.maintenanceService.create(
-      body.chargerId,
+      Number(body.chargerId),
       body.issue,
       body.priority,
     );

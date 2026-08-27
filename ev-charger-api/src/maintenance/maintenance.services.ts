@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -26,17 +30,25 @@ export class MaintenanceService {
     });
   }
 
-  async create(
-    chargerId: number,
-    issue: string,
-    priority: string,
-  ) {
+  async create(chargerId: number, issue: string, priority: string) {
+    if (!Number.isInteger(chargerId) || chargerId <= 0) {
+      throw new BadRequestException('A valid chargerId is required');
+    }
+
+    if (!issue || !issue.trim()) {
+      throw new BadRequestException('Issue is required');
+    }
+
+    if (!priority || !priority.trim()) {
+      throw new BadRequestException('Priority is required');
+    }
+
     const charger = await this.chargerRepository.findOneBy({
       id: chargerId,
     });
 
     if (!charger) {
-      throw new Error('Charger not found');
+      throw new NotFoundException('Charger not found');
     }
 
     charger.status = 'Maintenance';
@@ -44,8 +56,8 @@ export class MaintenanceService {
 
     const ticket = this.ticketRepository.create({
       charger,
-      issue,
-      priority,
+      issue: issue.trim(),
+      priority: priority.trim(),
       status: 'Open',
     });
 
@@ -59,7 +71,7 @@ export class MaintenanceService {
     });
 
     if (!ticket) {
-      throw new Error('Ticket not found');
+      throw new NotFoundException('Ticket not found');
     }
 
     ticket.status = 'Resolved';
